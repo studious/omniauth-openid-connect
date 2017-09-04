@@ -47,15 +47,15 @@ module OmniAuth
 
       info do
         {
-          name: user_info.name,
-          email: user_info.email,
-          nickname: user_info.preferred_username,
-          first_name: user_info.given_name,
-          last_name: user_info.family_name,
-          gender: user_info.gender,
-          image: user_info.picture,
-          phone: user_info.phone_number,
-          urls: { website: user_info.website }
+          name: user_info.respond_to?(:name) ? user_info.name : nil,
+          email: user_info.respond_to?(:email) ? user_info.email : nil,
+          nickname: user_info.respond_to?(:preferred_username) ? user_info.preferred_username : nil,
+          first_name: user_info.respond_to?(:given_name) ? user_info.given_name : nil,
+          last_name: user_info.respond_to?(:family_name) ? user_info.family_name : nil,
+          gender: user_info.respond_to?(:gender) ? user_info.gender : nil,
+          image: user_info.respond_to?(:picture) ? user_info.picture : nil,
+          phone: user_info.respond_to?(:phone_number) ? user_info.phone_number : nil,
+          urls: { website: user_info.respond_to?(:website) ? user_info.website : nil }
         }
       end
 
@@ -151,7 +151,7 @@ module OmniAuth
       end
 
       def user_info
-        @user_info ||= access_token.userinfo!
+        @user_info ||= decode_id_token(access_token.id_token)
       end
 
       def access_token

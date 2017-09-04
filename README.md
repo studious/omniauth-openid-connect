@@ -22,23 +22,44 @@ Or install it yourself as:
 
 ## Usage
 
-Example configuration
+Example configuration for Hydra (there is no userinfo endpoint)
 ```ruby
-config.omniauth :openid_connect, {
-  name: :my_provider,
-  scope: [:openid, :email, :profile, :address],
-  response_type: :code,
-  client_options: {
-    port: 443,
-    scheme: "https",
-    host: "myprovider.com",
-    identifier: ENV["OP_CLIENT_ID"],
-    secret: ENV["OP_SECRET_KEY"],
-    redirect_uri: "http://myapp.com/users/auth/openid_connect/callback",
-  },
-}
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :openid_connect, {
+    name: :hydra,
+    scope: [:openid],
+    response_type: :code,
+    issuer: 'http://hydra.test',
+    discovery: true,
+    client_options: {
+      port: 443,
+      scheme: "https",
+      host: "myprovider.com",
+      identifier: ENV["OP_CLIENT_ID"],
+      secret: ENV["OP_SECRET_KEY"],
+      redirect_uri: "http://myapp.com/auth/hydra/callback",
+      authorization_endpoint: '/oauth2/auth',
+      token_endpoint: '/oauth2/token',
+      jwks_uri: '/.well-known/jwks.json'
+    }
+  }
+end
 ```
 
+The auth endpoint becomes
+
+    /auth/:name
+
+To turn off HTTPS or cancel SSL Verification when certs aren't set add the
+following and change client_options scheme and port
+
+```ruby
+SWD.url_builder = URI::HTTP
+OpenIDConnect.http_config do |config|
+  config.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE
+end
+OpenIDConnect.debug!
+```
 Configuration details:
   * `name` is arbitrary, I recommend using the name of your provider. The name
   configuration exists because you could be using multiple OpenID Connect
